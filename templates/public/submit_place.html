@@ -1,0 +1,221 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% include 'public/_seo.html' %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""
+    >
+    <link rel="stylesheet" href="{% static 'styles/submit-place.css' %}">
+</head>
+<body>
+    <main class="submit-place">
+        <section class="submit-place__panel">
+            <header class="submit-place__header">
+                <a class="submit-place__back" href="{% url 'home' %}">Bumalik sa mapa</a>
+                <p class="submit-place__eyebrow">Community submission</p>
+                <h1>Magdagdag ng lugar sa Masbate</h1> 
+            </header>
+
+            <div class="submission-note">
+                <strong>Pagkatapos mong mag-submit:</strong>
+                Ire-review muna ng owner ang lugar sa Masbate. Kapag may kulang o may kailangang linawin, doon ka nila kokontakin sa email o Facebook na ilalagay mo.
+            </div>
+
+            {% if messages %}
+                <div class="submit-alert submit-alert--success">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if form.non_field_errors %}
+                <div class="submit-alert submit-alert--error">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form class="place-form" id="place-form" method="post" enctype="multipart/form-data" novalidate data-ajax="true">
+                {% csrf_token %}
+                {{ form.lat }}
+                {{ form.lng }}
+
+                <section class="form-section" aria-labelledby="place-info-title">
+                    <h2 id="place-info-title">Impormasyon ng lugar sa Masbate</h2>
+                    <div class="field-grid">
+                        <label class="field">
+                            <span>{{ form.name.label }}</span>
+                            {{ form.name }}
+                            {% for error in form.name.errors %}<small>{{ error }}</small>{% endfor %}
+                        </label>
+                        <label class="field">
+                            <span>{{ form.category.label }}</span>
+                            {{ form.category }}
+                            {% for error in form.category.errors %}<small>{{ error }}</small>{% endfor %}
+                        </label>
+                        <label class="field">
+                            <span>{{ form.rating.label }}</span>
+                            {{ form.rating }}
+                            <em>{{ form.rating.help_text }}</em>
+                            {% for error in form.rating.errors %}<small>{{ error }}</small>{% endfor %}
+                        </label>
+                    </div>
+                    <label class="field">
+                        <span>{{ form.address.label }}</span>
+                        {{ form.address }}
+                        {% for error in form.address.errors %}<small>{{ error }}</small>{% endfor %}
+                    </label>
+                    <label class="field field--file">
+                        <span>{{ form.profile.label }}</span>
+                        {{ form.profile }}
+                        <em>{{ form.profile.help_text }}</em>
+                        <div class="image-preview is-empty" id="image-preview">
+                            <span>Preview ng larawan</span>
+                        </div>
+                        {% for error in form.profile.errors %}<small>{{ error }}</small>{% endfor %}
+                    </label>
+                </section>
+
+                <section class="form-section contact-section" aria-labelledby="contact-info-title">
+                    <h2 id="contact-info-title">Contact para sa review</h2>
+                    <p class="section-note">Isa lang ang kailangan: email o Facebook. Mas maganda kung pareho para madaling makapag-update.</p>
+                    <label class="field">
+                        <span>{{ form.submitter_name.label }}</span>
+                        {{ form.submitter_name }}
+                        {% for error in form.submitter_name.errors %}<small>{{ error }}</small>{% endfor %}
+                    </label>
+                    <div class="field-grid">
+                        <label class="field">
+                            <span>{{ form.submitter_email.label }}</span>
+                            {{ form.submitter_email }}
+                            {% for error in form.submitter_email.errors %}<small>{{ error }}</small>{% endfor %}
+                        </label>
+                        <label class="field">
+                            <span>{{ form.submitter_facebook.label }}</span>
+                            {{ form.submitter_facebook }}
+                            {% for error in form.submitter_facebook.errors %}<small>{{ error }}</small>{% endfor %}
+                        </label>
+                    </div>
+                </section>
+
+                <div class="location-summary" id="location-summary">
+                    Pumili ng eksaktong lokasyon sa mapa.
+                </div>
+
+                {% for error in form.lat.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                {% for error in form.lng.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+
+                <button class="submit-button" id="submit-place-button" type="submit" disabled>
+                    Piliin muna ang lokasyon sa mapa
+                </button>
+            </form>
+        </section>
+
+        <section class="submit-map-shell" aria-label="Piliin ang lokasyon ng lugar">
+            <div class="submit-map-toolbar">
+                <button class="map-tool" id="use-current-location" type="button">
+                    <span class="map-tool__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 4.75a7.25 7.25 0 1 0 7.25 7.25A7.258 7.258 0 0 0 12 4.75Zm0-3v3m0 14.5v3M4.75 12h-3m19.5 0h-3" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"/>
+                        </svg>
+                    </span>
+                    <span class="map-tool__label">Gamitin lokasyon ko</span>
+                </button>
+                <button
+                    class="map-tool map-layer-toggle"
+                    id="submit-map-layer-toggle"
+                    type="button"
+                    aria-pressed="false"
+                    aria-label="Palitan sa default map na may address labels"
+                >
+                    <span class="map-tool__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 3 3.5 7.5 12 12l8.5-4.5L12 3Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.8"/>
+                            <path d="m5 11 7 3.7 7-3.7M5 15l7 3.7 7-3.7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                        </svg>
+                    </span>
+                    <span class="map-tool__label" id="submit-map-layer-toggle-label">Satellite</span>
+                </button>
+                <span class="map-status" id="map-status">I-click ang mapa o i-drag ang pin.</span>
+            </div>
+            <div class="map-guide">
+                <strong>I-pin ang mismong puwesto ng lugar sa Masbate</strong>
+                <span>Mas eksakto ang review kapag nasa entrance, tindahan, o actual building ang pin.</span>
+            </div>
+            <div class="selected-location-card" id="selected-location-card">
+                <span>Wala pang napiling lokasyon</span>
+                <strong id="selected-location-coords">Tapikin ang mapa para maglagay ng pin</strong>
+            </div>
+            <div
+                class="submit-map"
+                id="submit-map"
+                data-center-lat="{{ center_lat }}"
+                data-center-lng="{{ center_lng }}"
+                data-selected-lat="{{ form.lat.value|default_if_none:'' }}"
+                data-selected-lng="{{ form.lng.value|default_if_none:'' }}"
+                aria-label="Interactive na satellite map para pumili ng lokasyon"
+            ></div>
+        </section>
+
+        <section class="location-modal is-hidden" id="submit-location-modal" aria-hidden="true" aria-labelledby="submit-location-modal-title">
+            <div class="location-modal__backdrop" data-location-dismiss="true"></div>
+            <div class="location-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="submit-location-modal-title" aria-describedby="submit-location-modal-message">
+                <div class="location-modal__badge" aria-hidden="true">GPS</div>
+                <p class="location-modal__eyebrow">Pahintulot sa Lokasyon</p>
+                <h2 class="location-modal__title" id="submit-location-modal-title">Payagan ang GPS</h2>
+                <p class="location-modal__message" id="submit-location-modal-message">
+                    Gagamitin ng Didilang ang lokasyon ng phone mo para doon magsimula ang mapa habang pinipili mo ang lugar.
+                </p>
+                <p class="location-modal__note" id="submit-location-modal-note">
+                    Kapag hindi available ang GPS, default na area muna ang ipapakita bilang fallback.
+                </p>
+                <div class="location-modal__benefits" aria-hidden="true">
+                    <span>Mas mabilis pumili</span>
+                    <span>Mas eksaktong base map</span>
+                    <span>Default area bilang fallback</span>
+                </div>
+                <div class="location-modal__actions">
+                    <button class="location-modal__secondary" id="submit-location-modal-dismiss" type="button">Sa default muna</button>
+                    <button class="location-modal__primary" id="submit-location-modal-allow" type="button">Payagan ang GPS</button>
+                </div>
+            </div>
+        </section>
+
+        <div class="submit-loader is-hidden" id="submit-loader" aria-hidden="true" role="status" aria-live="polite">
+            <div class="submit-loader__card">
+                <div class="submit-loader__spinner" aria-hidden="true"></div>
+                <p id="submit-loader-text">Sinusumite ang lugar...</p>
+            </div>
+        </div>
+
+        <div class="submit-popup is-hidden" id="submit-popup" aria-hidden="true">
+            <div class="submit-popup__backdrop" data-popup-close="true"></div>
+            <div class="submit-popup__card" role="dialog" aria-modal="true" aria-labelledby="submit-popup-title" aria-describedby="submit-popup-message">
+                <div class="submit-popup__badge" id="submit-popup-badge" aria-hidden="true"></div>
+                <p class="submit-popup__eyebrow" id="submit-popup-eyebrow">Update</p>
+                <h2 class="submit-popup__title" id="submit-popup-title">May update sa submission</h2>
+                <p class="submit-popup__message" id="submit-popup-message">Tingnan ang detalye ng submission mo.</p>
+                <button class="submit-popup__button" id="submit-popup-close" type="button">Sige</button>
+            </div>
+        </div>
+    </main>
+
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""
+    ></script>
+    <script src="{% static 'scripts/submit-place.js' %}"></script>
+</body>
+</html>

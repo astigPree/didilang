@@ -1,3 +1,7 @@
+## Repository Notice
+
+This project was originally developed and maintained in another GitHub account. It has been mirrored here as part of my professional portfolio to showcase my work and development experience.
+
 # Didilang
 
 Community-powered local discovery map for finding and submitting useful places in Masbate, Philippines.

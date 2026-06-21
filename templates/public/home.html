@@ -1,0 +1,260 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% include 'public/_seo.html' %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""
+    >
+    <link rel="stylesheet" href="{% static 'styles/map-home.css' %}">
+</head>
+<body>
+    <main class="map-home">
+        <section class="map-stage" aria-label="Mapa ng Didilang">
+            <div
+                class="map-backdrop"
+                id="map"
+                data-center-lat="{{ center_lat }}"
+                data-center-lng="{{ center_lng }}"
+                data-nearby-url="{% url 'nearby_places' %}"
+                aria-label="Interactive na satellite map"
+            ></div>
+
+            <header class="top-search">
+                <form class="search-shell" role="search" aria-label="Maghanap ng lugar ayon sa pangalan">
+                    <span class="search-shell__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M10.5 18a7.5 7.5 0 1 1 0-15a7.5 7.5 0 0 1 0 15Zm0 0 7 3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                        </svg>
+                    </span>
+                    <label class="sr-only" for="place-search">Maghanap ng mga lugar sa Masbate</label>
+                    <input id="place-search" type="search" placeholder="Maghanap ng kainan, barberya, laundry sa Masbate..." autocomplete="off">
+                    <button class="sr-only" type="submit">Maghanap</button>
+                    <button class="search-shell__action" type="button" aria-label="Gamitin ang kasalukuyang lokasyon">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 4.75a7.25 7.25 0 1 0 7.25 7.25A7.258 7.258 0 0 0 12 4.75Zm0-3v3m0 14.5v3M4.75 12h-3m19.5 0h-3" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"/>
+                        </svg>
+                    </button>
+                </form>
+            </header>
+
+            <aside class="map-actions" aria-label="Mabilisang aksyon">
+                <button
+                    class="fab fab-secondary map-layer-toggle"
+                    id="map-layer-toggle"
+                    type="button"
+                    aria-pressed="false"
+                    aria-label="Palitan sa default map na may address labels"
+                >
+                    <span class="fab__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 3 3.5 7.5 12 12l8.5-4.5L12 3Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.8"/>
+                            <path d="m5 11 7 3.7 7-3.7M5 15l7 3.7 7-3.7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                        </svg>
+                    </span>
+                    <span class="fab__label" id="map-layer-toggle-label">Satellite</span>
+                </button>
+                <button class="fab fab-secondary" type="button" data-action="nearby">
+                    <span class="fab__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                            <circle cx="12" cy="10" r="2.5" fill="currentColor"/>
+                        </svg>
+                    </span>
+                    <span class="fab__label">Malapit</span>
+                </button>
+                <button class="fab fab-secondary fab-outline" type="button" data-action="categories">
+                    <span class="fab__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h3l1.4 1.6H17.5A2.5 2.5 0 0 1 20 9.1v7.4A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-9Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                            <path d="M4 10h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    <span class="fab__label">Kategorya</span>
+                </button>
+                <a class="fab fab-primary" href="{% url 'submit_place' %}" data-action="add-place">
+                    <span class="fab__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    <span class="fab__label">Magdagdag</span>
+                </a>
+            </aside>
+
+            <button class="bottom-sheet-toggle" type="button" aria-controls="nearby-sheet" aria-expanded="false" aria-hidden="true">
+                <span>Mga malapit sa'yo</span>
+            </button>
+
+            <section class="bottom-sheet" id="nearby-sheet" aria-label="Mga malalapit na establisimyento">
+                <div class="bottom-sheet__handle" aria-hidden="true"></div>
+                <div class="bottom-sheet__header">
+                    <div>
+                        <p class="bottom-sheet__eyebrow">Mapa ng Masbate</p>
+                        <h1>Maghanap ng mga lugar sa Masbate</h1>
+                    </div>
+                    <div class="bottom-sheet__actions"> 
+                        <button class="bottom-sheet__close" type="button" aria-label="Isara ang panel ng malalapit na lugar">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button class="scope-controls-toggle" id="scope-controls-toggle" type="button" aria-controls="scope-controls-panel" aria-expanded="true">
+                    <span class="scope-controls-toggle__copy">
+                        <span class="scope-controls-toggle__label">Mga setting ng hanap</span>
+                        <span class="scope-controls-toggle__meta" id="scope-controls-toggle-meta">1 km / 10 lugar</span>
+                    </span>
+                    <span class="scope-controls-toggle__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                </button>
+
+                <div class="scope-controls-panel" id="scope-controls-panel">
+                    <div class="scope-controls">
+                        <div class="scope-intro">
+                            <p class="scope-intro__title">Local map para sa Masbate</p>
+                            <p class="scope-intro__text">Pumili ng layo at dami ng resulta para mas mabilis mahanap ang tamang kainan, shop, serbisyo, o landmark sa Masbate.</p>
+                        </div>
+
+                        <section class="scope-card" aria-labelledby="scope-radius-label">
+                            <div class="scope-card__head">
+                                <div>
+                                    <span class="scope-field__label" id="scope-radius-label">Lawak ng hanap</span>
+                                    <p class="scope-card__hint">Mas malawak ang sakop, mas maraming mapagpipilian.</p>
+                                </div>
+                                <span class="scope-card__value" id="scope-radius-value">1 km</span>
+                            </div>
+
+                            <div class="scope-options" data-scope-buttons="scope-radius" role="group" aria-labelledby="scope-radius-label">
+                                <button class="scope-option" type="button" data-value="0.5" aria-pressed="false">500m</button>
+                                <button class="scope-option is-active" type="button" data-value="1" aria-pressed="true">1 km</button>
+                                <button class="scope-option" type="button" data-value="3" aria-pressed="false">3 km</button>
+                                <button class="scope-option" type="button" data-value="5" aria-pressed="false">5 km</button>
+                                <button class="scope-option" type="button" data-value="10" aria-pressed="false">10 km</button>
+                            </div>
+
+                            <label class="sr-only" for="scope-radius">Lawak ng hanap</label>
+                            <select id="scope-radius" class="scope-native-select">
+                                <option value="0.5">500 metro</option>
+                                <option value="1" selected>1 kilometro</option>
+                                <option value="3">3 kilometro</option>
+                                <option value="5">5 kilometro</option>
+                                <option value="10">10 kilometro</option>
+                            </select>
+                        </section>
+
+                        <section class="scope-card" aria-labelledby="scope-limit-label">
+                            <div class="scope-card__head">
+                                <div>
+                                    <span class="scope-field__label" id="scope-limit-label">Dami ng lugar</span>
+                                    <p class="scope-card__hint">Kontrolado mo kung gaano karaming resulta ang lalabas.</p>
+                                </div>
+                                <span class="scope-card__value" id="scope-limit-value">10 lugar</span>
+                            </div>
+
+                            <div class="scope-options scope-options--compact" data-scope-buttons="scope-limit" role="group" aria-labelledby="scope-limit-label">
+                                <button class="scope-option" type="button" data-value="5" aria-pressed="false">5</button>
+                                <button class="scope-option is-active" type="button" data-value="10" aria-pressed="true">10</button>
+                                <button class="scope-option" type="button" data-value="20" aria-pressed="false">20</button>
+                                <button class="scope-option" type="button" data-value="50" aria-pressed="false">50</button>
+                            </div>
+
+                            <label class="sr-only" for="scope-limit">Dami ng lugar</label>
+                            <select id="scope-limit" class="scope-native-select">
+                                <option value="5">5 lugar</option>
+                                <option value="10" selected>10 lugar</option>
+                                <option value="20">20 lugar</option>
+                                <option value="50">50 lugar</option>
+                            </select>
+                        </section>
+
+                        <button class="scope-apply" id="apply-scope" type="button">
+                            <span class="scope-apply__eyebrow">Handa nang maghanap</span>
+                            <span class="scope-apply__label" id="scope-apply-label">Ipakita ang 10 lugar sa loob ng 1 km</span>
+                        </button>
+                    </div>
+                </div>
+
+                <p class="scope-summary" id="scope-summary">
+                    I-set muna ang layo at dami ng resulta bago ipakita ang mga lugar sa Masbate.
+                </p>
+
+                <div class="place-list" id="place-list">
+                    <article class="place-card place-card--empty">
+                        <div class="place-card__thumb"></div>
+                        <div class="place-card__body">
+                            <h2>Wala pang aktibong hanap sa Masbate</h2>
+                            <p>Piliin muna ang lawak ng hanap at dami ng lugar para makapagpakita ng resulta sa mapa.</p>
+                            <span>Naghihintay ng scope</span>
+                        </div>
+                    </article>
+                </div>
+
+                {% if seo_place_links %}
+                    <section class="seo-local-places" aria-labelledby="seo-local-places-title">
+                        <h2 id="seo-local-places-title">Mga lugar sa Masbate</h2>
+                        <ul>
+                            {% for item in seo_place_links %}
+                                <li>
+                                    <a href="{{ item.path }}">
+                                        {{ item.place.name }} - {{ item.place.category }} sa {{ item.place.address }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </section>
+                {% endif %}
+            </section>
+
+            <section class="location-modal is-hidden" id="location-modal" aria-hidden="true" aria-labelledby="location-modal-title">
+                <div class="location-modal__backdrop" data-location-dismiss="true"></div>
+                <div class="location-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="location-modal-title" aria-describedby="location-modal-message">
+                    <div class="location-modal__badge" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                            <circle cx="12" cy="10" r="2.5" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <p class="location-modal__eyebrow">Pahintulot sa Lokasyon</p>
+                    <h2 class="location-modal__title" id="location-modal-title">Payagan ang lokasyon</h2>
+                    <p class="location-modal__message" id="location-modal-message">
+                        Ginagamit ng Didilang ang lokasyon mo para ipakita ang totoong malalapit na lugar, ayusin ang resulta ayon sa tunay na layo, at i-center ang mapa sa puwesto mo.
+                    </p>
+                    <p class="location-modal__note" id="location-modal-note">
+                        Kapag nanatiling naka-block ang lokasyon, gagamit ang app ng default na area at maaaring hindi eksakto ang mga nearby result.
+                    </p>
+                    <div class="location-modal__benefits" aria-hidden="true">
+                        <span>Mas eksaktong resulta</span>
+                        <span>Tunay na layo ang basehan</span>
+                        <span>Mas mabilis makahanap</span>
+                    </div>
+                    <div class="location-modal__actions">
+                        <button class="location-modal__secondary" id="location-modal-dismiss" type="button">Sa susunod na lang</button>
+                        <button class="location-modal__primary" id="location-modal-allow" type="button">Payagan ang lokasyon</button>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""
+    ></script>
+    <script src="{% static 'scripts/map-home.js' %}"></script>
+</body>
+</html>

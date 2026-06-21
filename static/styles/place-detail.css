@@ -1,0 +1,201 @@
+:root {
+    --primary-brown: #6B3E1E;
+    --primary-orange: #D97A1E;
+    --accent-orange: #F4A533;
+    --green: #4CAF50;
+    --white: #FFFFFF;
+    --light-gray: #F5F5F5;
+    --text-dark: #333333;
+    --primary-brown-rgb: 107, 62, 30;
+    --primary-orange-rgb: 217, 122, 30;
+    --accent-orange-rgb: 244, 165, 51;
+    --text-dark-rgb: 51, 51, 51;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    min-height: 100%;
+    margin: 0;
+}
+
+body {
+    background:
+        linear-gradient(180deg, rgba(var(--primary-brown-rgb), 0.08), transparent 320px),
+        var(--light-gray);
+    color: var(--text-dark);
+    font-family: 'Inter', sans-serif;
+}
+
+a {
+    color: inherit;
+}
+
+.place-detail {
+    width: min(1120px, 100%);
+    margin: 0 auto;
+    padding: 22px;
+}
+
+.place-detail__nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.place-detail__nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 42px;
+    padding: 0 14px;
+    border: 1px solid rgba(var(--primary-brown-rgb), 0.16);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--primary-brown);
+    font-size: 0.92rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.place-hero {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.82fr) minmax(0, 1fr);
+    gap: 26px;
+    align-items: center;
+    padding: clamp(16px, 3vw, 26px);
+    border: 1px solid rgba(var(--primary-brown-rgb), 0.14);
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 28px 70px rgba(var(--primary-brown-rgb), 0.14);
+}
+
+.place-hero__media {
+    overflow: hidden;
+    border-radius: 22px;
+    background: rgba(var(--primary-orange-rgb), 0.08);
+    aspect-ratio: 4 / 3;
+}
+
+.place-hero__media img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.place-hero__content {
+    display: grid;
+    gap: 16px;
+}
+
+.place-hero__eyebrow {
+    margin: 0;
+    color: var(--primary-orange);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.place-hero h1 {
+    margin: 0;
+    color: var(--primary-brown);
+    font-family: 'Poppins', sans-serif;
+    font-size: clamp(2rem, 6vw, 4rem);
+    line-height: 1;
+}
+
+.place-hero__summary,
+.place-copy p {
+    margin: 0;
+    color: rgba(var(--text-dark-rgb), 0.74);
+    font-size: 1rem;
+    line-height: 1.65;
+}
+
+.place-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin: 0;
+}
+
+.place-facts div {
+    padding: 12px 14px;
+    border: 1px solid rgba(var(--primary-brown-rgb), 0.12);
+    border-radius: 16px;
+    background: var(--light-gray);
+}
+
+.place-facts dt {
+    color: rgba(var(--text-dark-rgb), 0.68);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.place-facts dd {
+    margin: 4px 0 0;
+    color: var(--primary-brown);
+    font-weight: 800;
+}
+
+.place-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.place-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0 18px;
+    border-radius: 999px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.place-button--primary {
+    background: linear-gradient(135deg, var(--primary-orange), var(--accent-orange));
+    color: var(--white);
+    box-shadow: 0 16px 34px rgba(var(--accent-orange-rgb), 0.24);
+}
+
+.place-button--secondary {
+    border: 1px solid rgba(var(--primary-brown-rgb), 0.18);
+    background: var(--white);
+    color: var(--primary-brown);
+}
+
+.place-copy {
+    display: grid;
+    gap: 10px;
+    margin-top: 20px;
+    padding: clamp(18px, 3vw, 28px);
+}
+
+.place-copy h2 {
+    margin: 0;
+    color: var(--primary-brown);
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.45rem;
+}
+
+@media (max-width: 800px) {
+    .place-detail {
+        padding: 14px;
+    }
+
+    .place-hero,
+    .place-facts {
+        grid-template-columns: 1fr;
+    }
+}

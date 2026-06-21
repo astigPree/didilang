@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% include 'public/_seo.html' %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'styles/place-detail.css' %}">
+</head>
+<body>
+    <main class="place-detail">
+        <nav class="place-detail__nav" aria-label="Navigation">
+            <a href="{% url 'home' %}">Bumalik sa mapa</a>
+            <a href="{% url 'submit_place' %}">Magdagdag ng lugar</a>
+        </nav>
+
+        <article class="place-hero">
+            <div class="place-hero__media">
+                {% if place.profile %}
+                    <img src="{{ place.profile.url }}" alt="{{ place.name }} sa Masbate">
+                {% else %}
+                    <img src="{% static 'assets/logo.png' %}" alt="Didilang local place marker">
+                {% endif %}
+            </div>
+            <div class="place-hero__content">
+                <p class="place-hero__eyebrow">Lugar sa Masbate</p>
+                <h1>{{ place.name }}</h1>
+                <p class="place-hero__summary">
+                    {{ place.category }} sa Masbate. Makikita sa {{ place.address }}.
+                </p>
+                <dl class="place-facts">
+                    <div>
+                        <dt>Kategorya</dt>
+                        <dd>{{ place.category }}</dd>
+                    </div>
+                    <div>
+                        <dt>Rating</dt>
+                        <dd>{{ place.rating|floatformat:1 }} stars</dd>
+                    </div>
+                    <div>
+                        <dt>Address o landmark</dt>
+                        <dd>{{ place.address }}</dd>
+                    </div>
+                    <div>
+                        <dt>Lokasyon</dt>
+                        <dd>{{ place.lat|floatformat:6 }}, {{ place.lng|floatformat:6 }}</dd>
+                    </div>
+                </dl>
+                <div class="place-hero__actions">
+                    <a class="place-button place-button--primary" href="{% url 'home' %}?q={{ place.name|urlencode }}">Hanapin sa Didilang map</a>
+                    <a class="place-button place-button--secondary" href="https://www.google.com/maps/search/?api=1&query={{ map_query|urlencode }}" rel="noopener" target="_blank">Buksan sa map app</a>
+                </div>
+            </div>
+        </article>
+
+        <section class="place-copy" aria-labelledby="place-copy-title">
+            <h2 id="place-copy-title">Tungkol sa {{ place.name }}</h2>
+            <p>
+                Ang {{ place.name }} ay isang {{ place.category }} sa Masbate na puwedeng hanapin gamit ang Didilang.
+                Ginagamit ng page na ito ang eksaktong lokasyon, address o landmark, larawan, at rating para mas madaling makita ng mga tao ang lugar.
+            </p>
+        </section>
+    </main>
+</body>
+</html>
