@@ -155,7 +155,7 @@ didilang/
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/didilang.git
+git clone https://github.com/astigPree/didilang.git
 cd didilang
 ```
 
@@ -280,8 +280,8 @@ This project strengthened my ability to build a practical location-based web app
 
 ## Author
 
-**Your Name**  
-GitHub: https://github.com/yourusername  
-Portfolio: https://yourportfolio.com  
-Email: your-email@example.com
+**Ericson Mark Abayon Guanzon**  
+GitHub: https://github.com/astigPree  
+Portfolio: https://programmerin.masbate.top  
+Email: maxcrizguanzon123@gmail.com
 "# didilang" 
